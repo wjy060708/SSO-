@@ -9,7 +9,135 @@
     在以往的单体应用中将登录信息存储在session中，需要时随时获取，如果取不到则跳转到登录页面进行登录。但在如今的分布式应用中如何实现session之间的共享？
     目前较流行的解决方案为SSO与redis:
 ## 3.跨域
-### 3.1 httpclient
+### 3.1 httpclient 
+[httpclient工具类](https://github.com/wjy060708/httpclientutil").
+实现跨域发送请求 包括http/http+ssl get/post 提交表单、代理等
+
+	public class SimpleHttpClientDemo {
+
+	/**
+	 * 
+	 * @param url url地址
+	 * @param map 请求参数
+	 * @param encoding 编码
+	 * @return
+	 * @throws IOException 
+	 * @throws ClientProtocolException 
+	 */
+	public static String doPost(String url, Map<String, String> map,String encoding) throws         ClientProtocolException, IOException {
+		
+		String body = "";
+		//创建httpclient对象
+		CloseableHttpClient client = HttpClients.createDefault();
+		
+		//创建post方式请求对象
+		HttpPost httpPost = new HttpPost(url);
+		
+		//装填参数
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		if(map!=null){
+			for (Entry<String, String> entry : map.entrySet()) {
+				nvps.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+			}
+		}
+		
+		//设置参数到请求对象中
+		httpPost.setEntity(new UrlEncodedFormEntity(nvps, encoding));
+		
+		System.out.println("请求地址："+url);
+		System.out.println("请求参数："+nvps.toString());
+		
+		//设置header信息
+		//指定报文头【Content-type】、【User-Agent】
+		httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
+		httpPost.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+		
+		//执行请求操作，并拿到结果（同步阻塞）
+		CloseableHttpResponse response = client.execute(httpPost);
+		//获取结果实体
+		HttpEntity entity = response.getEntity();
+		if (entity != null) {
+			//按指定编码转换结果实体为String类型
+			body = EntityUtils.toString(entity, encoding);
+		}
+		EntityUtils.consume(entity);
+		//释放链接
+		response.close();
+        return body;
+	}
+	
+	/**
+	 * 发送 get请求
+	 */
+	public static String doGet(String url, Map<String, String> map,String encoding) {
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		
+		HttpEntity entity;
+		try {
+			
+			URIBuilder uriBuilder = new URIBuilder(url);
+			// 创建httpget.  
+			HttpGet httpget = new HttpGet(url);
+			
+			//装填参数
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			if(map!=null){
+				for (Entry<String, String> entry : map.entrySet()) {
+					nvps.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+				}
+			}
+			uriBuilder.setParameters(nvps);
+			// 根据带参数的URI对象构建GET请求对象
+	        HttpGet httpGet = new HttpGet(uriBuilder.build());
+	        
+	        // 浏览器表示
+	        httpGet.addHeader("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.6)");
+	        // 传输的类型
+	        httpGet.addHeader("Content-Type", "application/x-www-form-urlencoded");
+			
+			// 执行get请求.  
+			CloseableHttpResponse response = httpclient.execute(httpget);
+			try {
+				// 获取响应实体  
+				entity = response.getEntity();
+				System.out.println("--------------------------------------");
+				// 打印响应状态  
+				System.out.println(response.getStatusLine());
+				if (entity != null) {
+					// 打印响应内容长度  
+					System.out.println("Response content length: " + entity.getContentLength());
+					// 打印响应内容  
+					System.out.println("Response content: " + EntityUtils.toString(entity));
+					
+					return entity.toString();
+				}
+				System.out.println("------------------------------------");
+				
+				return null;
+			} finally {
+				response.close();
+			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		} finally {
+			// 关闭连接,释放资源  
+			try {
+				httpclient.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+}
+
 ### 3.2 Spring Boot跨域(@CrossOrigin)
 ## 4. SSO实现两个功能
 ### 4.1 SSO登录和认证功能
