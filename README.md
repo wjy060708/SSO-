@@ -10,7 +10,7 @@
     目前较流行的解决方案为SSO与redis:
 ## 3.跨域
 ### 3.1 httpclient 
-[httpclient工具类](https://github.com/wjy060708/httpclientutil").
+[httpclient工具类](https://github.com/wjy060708/httpclientutil)
 实现跨域发送请求 包括http/http+ssl get/post 提交表单、代理等
 
 	public class SimpleHttpClientDemo {
@@ -136,7 +136,7 @@
 		}
 		return null;
 	}
-}
+       }
 
 ### 3.2 Spring Boot跨域(@CrossOrigin)
 ## 4. SSO实现两个功能
